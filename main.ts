@@ -17,7 +17,7 @@ const openai = new OpenAIApi(configuration);
 
 let lastRequestTime = Date.now();
 
-let prompt = process.env.PROMPT ?? fs.readFileSync('defaultPrompt.txt', 'utf8');
+let prompt = process.env.PERSON_PROMPT ?? fs.readFileSync('defaultPrompt.txt', 'utf8');
 
 client.on('ready', () => {
 	if (!client.user) return; // This should never happen, but just in case (TypeScript)
@@ -45,7 +45,21 @@ client.on('messageCreate', async (message) => {
 		// Start indiciating that the bot is typing
 		message.channel.sendTyping();
 		try {
-			message.channel.send(await gpt3Generate(message));
+			const response = await gpt3Generate(message);
+
+			if (response.length < 1) {
+				throw new Error({
+					response: {
+						data: {
+							error: {
+								message: 'No response from OpenAI :cry:'
+							}
+						}
+					}
+				} as any);
+			}
+
+			message.channel.send(response);
 		} catch (error: any) {
 			console.log(error);
 			message.channel.send('!hide ' + error.response.data.error.message);
@@ -137,7 +151,7 @@ function gpt3Generate(message: Message) {
 				numberOfMessages++;
 			});
 
-			gpt3String = `Please generate a short message as "${process.env.FAKE_PERSON_NAME ?? 'Stefan'}". Only generate a single message. Format the message like the other messages, starting with date and "${client.user?.username}: " \n\n` + gpt3String;
+			gpt3String = `Please generate a short message as "${process.env.FAKE_PERSON_NAME ?? 'Stefan'}". Only generate a single message. Format the message like the other messages but with your own message, starting with date and "${client.user?.username}: ". The message itself should be in citations \n\n` + gpt3String;
 
 			try {
 				const completion = await openai.createChatCompletion({
@@ -164,6 +178,8 @@ function gpt3Generate(message: Message) {
 					reject('No response from OpenAI');
 					return;
 				}
+
+				console.log('Response from OpenAI: ' + response.content);
 
 				const message = extractMessage(response.content);
 				resolve(reverseResolveUserMentions(message));
