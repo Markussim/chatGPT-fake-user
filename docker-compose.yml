@@ -1,0 +1,8 @@
+version: '3.7'
+name: 'chatgpt-fake-user'
+services:
+    bot:
+        restart: unless-stopped
+        build:
+            context: ./
+            dockerfile: ./Dockerfile
