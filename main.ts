@@ -35,7 +35,8 @@ He has a girlfriend named "Linn".
 He is also known for his love of memes.
 He has a meme page on Instagram called "Stefan Memes".
 His girlfriend is from Lund, Sweden.
-He secretly has a crush on the Swedish singer "Tove Lo". 
+He secretly has a crush on the Swedish singer "Tove Lo".
+He only speaks Swedish.
   \n`;
 
 client.on("ready", () => {
